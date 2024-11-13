@@ -1,50 +1,20 @@
+import pytest
 from shop import Shop, User
 
 
-def test_happy_path(fsf_address):
-    user = User(
-        name="bob",
-        email="bob@domain.tld",
-        age=25,
-        address=fsf_address,
-        verified=True,
-    )
+def test_happy_path(user_base):
 
-    assert Shop.can_order(user)
-    assert not Shop.must_pay_foreign_fee(user)
+    assert Shop.can_order(user_base)
+    assert not Shop.must_pay_foreign_fee(user_base)
 
 
-def test_minors_cannot_order_from_the_shop(fsf_address):
-    user = User(
-        name="bob",
-        email="bob@domain.tld",
-        age=16,
-        address=fsf_address,
-        verified=True,
-    )
+def test_minors_cannot_order_from_the_shop(user_minor):
+    assert not Shop.can_order(user_minor)
 
-    assert not Shop.can_order(user)
+# Ce test va échouer parce que le code qui implémente cette foncionnalité n'est pas cohérent
+def test_cannot_order_if_not_verified(user_not_verified):
+    assert not Shop.can_order(user_not_verified), f'La propriété Verified de User {user_not_verified} est False mais il arrive quand même à commander'
 
 
-def test_cannot_order_if_not_verified(fsf_address):
-    user = User(
-        name="bob",
-        email="bob@domain.tld",
-        age=16,
-        address=fsf_address,
-        verified=False,
-    )
-
-    assert not Shop.can_order(user)
-
-
-def test_foreigners_must_be_foreign_fee(paris_address):
-    user = User(
-        name="bob",
-        email="bob@domain.tld",
-        age=25,
-        address=paris_address,
-        verified=False,
-    )
-
-    assert Shop.must_pay_foreign_fee(user)
+def test_foreigners_must_be_foreign_fee(user_foreign):
+    assert Shop.must_pay_foreign_fee(user_foreign)
